@@ -1,5 +1,5 @@
 # Which Characters Need Context?
-### Measuring Character-Specific Context Horizons in Natural Language and Source Code
+### Measuring Character-Specific Context Gain in Natural Language and Source Code
 
 **Author:** Amar Bassan  
 **Preprint:** [Zenodo DOI — to be assigned]  
@@ -155,7 +155,7 @@ than lexical ones.
 ```
 @misc{bassan2026context,
   title  = {Which Characters Need Context? Measuring Character-Specific
-             Context Horizons in Natural Language and Source Code},
+             Context Gain in Natural Language and Source Code},
   author = {Bassan, Amar},
   year   = {2026},
   note   = {Preprint. \url{https://github.com/asbassan/char-context-gain}}
