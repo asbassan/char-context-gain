@@ -119,11 +119,11 @@ results_canonical_snapshot/   Locked reference values (pre-adaptive-k rerun)
 
 | Corpus | k_max | β₃ | SE | 95 % CI | p |
 |---|---|---|---|---|---|
-| NL1 — Pride & Prejudice | 8 | **+1.131** | 0.337 | [+0.452, +1.810] | 0.0016 |
-| NL2 — Shakespeare | 7 | **+0.551** | 0.250 | [+0.049, +1.053] | 0.0319 |
+| NL1 — tinyshakespeare | 7 | +0.551 | 0.250 | [+0.049, +1.053] | 0.0319 |
+| NL2 — Pride & Prejudice | 8 | **+1.131** | 0.337 | [+0.452, +1.810] | 0.0016 |
 | Code1 — Python stdlib | 10 | −0.024 | 0.262 | [−0.481, +0.561] | 0.9304 |
 
-β₃ > 0 in both NL corpora (NL1 survives 3-test Bonferroni at α = 0.017).
+β₃ > 0 in both NL corpora (NL2 survives 3-test Bonferroni at α = 0.017; NL1 is directional).
 β₃ ≈ 0 for code — structural characters in Python are not more context-dependent
 than lexical ones.
 
@@ -144,7 +144,7 @@ than lexical ones.
 | Symbol | Definition |
 |---|---|
 | S_x(k; D) | Mean surprisal of char x given k preceding chars (Laplace-smoothed) |
-| CG_x(k; D) | S_x(1; D) − S_x(k; D) — Context Gain over unigram baseline |
+| CG_x(k; D) | S_x(1; D) − S_x(k; D) — Context Gain relative to the one-character-context (bigram) baseline |
 | k_peak | argmax_k CG_x(k) within the reliable k range |
 | β₃ | Coefficient on log₂(k) × Structural in the panel regression |
 

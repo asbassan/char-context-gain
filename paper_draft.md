@@ -4,7 +4,7 @@
 **Author:** Amar Bassan  
 **Affiliation:** Independent Researcher  
 **Date:** 2026-08-21  
-**Version:** v3 — adaptive k, coverage-based k_max, KenLM backend  
+**Version:** v3 — adaptive k, coverage-based k_max, optional KenLM backend  
 **Repository:** github.com/asbassan/char-context-gain  
 **Zenodo DOI:** [to be assigned]
 
@@ -34,7 +34,7 @@ The reliable n-gram range is corpus-specific: k ≤ 7 for NL1, k ≤ 8 for NL2, 
 
 ## 1. Introduction
 
-The history of language modelling begins at the character level. Shannon (1951) estimated the entropy of English by asking human subjects to predict successive letters. Modern large language models report aggregate perplexity, which compresses all character and symbol types into a single number. That compression hides a question worth asking directly: do all individual characters benefit equally from longer context, or do structural symbols — punctuation, delimiters, sentence boundaries — require disproportionately more context than ordinary letters?
+The history of language modelling begins at the character level. Shannon (1951) estimated the entropy of English by asking human subjects to predict successive letters. Modern large language models report aggregate perplexity, which compresses all character and symbol types into a single number. That compression hides a question worth asking directly: do all individual characters benefit equally from longer context, or do structural symbols — punctuation, delimiters, sentence boundaries — benefit disproportionately from additional context compared with ordinary letters?
 
 **Contributions:**
 
@@ -183,7 +183,7 @@ The key coefficient is **β₃**: the additional context-gain rate for structura
 | NL2 | Pride and Prejudice | Natural language | ~694K chars | 87 |
 | Code1 | Python 3.12 stdlib (163 files) | Source code | ~4.6M chars | 164 |
 
-All splits: 80% train / 10% test on raw characters. (A 10% validation split was created but not used in any reported computation; all surprisal estimates and regression observations are from the held-out test portion only.) Context lengths: k ∈ {1, 2, 3, 4, 5, 6, 7, 8}; k=1 serves as the CG baseline; regression observations use k ∈ {2, ..., k_max}.
+All splits: 80% train / 10% test on raw characters. (A 10% validation split was created but not used in any reported computation; all surprisal estimates and regression observations are from the held-out test portion only.) Candidate context lengths were evaluated up to the per-corpus k_max determined by the coverage probe (Section 3.5); k=1 serves as the CG baseline; regression observations use k ∈ {2, ..., k_max}. The probe yielded k_max = 7 for NL1, k_max = 8 for NL2, and k_max = 10 for Code1.
 
 ---
 
@@ -398,7 +398,7 @@ Every measurement carries an implicit (D). The reliable k range, S_x(1; D), and 
 
 **Overview.** *All CG values in this paper are estimates from a Laplace-smoothed n-gram model. A different estimator — a Transformer, a Kneser-Ney model — would produce different numbers. This section explains why no guaranteed relationship holds between n-gram CG and neural CG, and why the n-gram framework was chosen despite this: it is transparent, reproducible, and does not conflate model capacity with corpus properties. The structural/lexical separation found here may be larger or smaller under a neural estimator — that is an open empirical question.*
 
-Because CG_x(k; D) is defined as S_x(1; D) − S_x(k; D) using a Laplace-smoothed n-gram, the measured values are estimator-dependent. A model with higher capacity would produce different surprisal estimates, and the difference at k=1 vs k=k* could be larger or smaller. No upper or lower bound relationship between n-gram CG and Transformer CG follows from either model being a better estimator of the true distribution. The n-gram measurements describe what a Laplace-smoothed count model finds in these corpora at k ≤ 8. Whether a more expressive model would show larger or smaller structural/lexical separation is an open empirical question.
+Because CG_x(k; D) is defined as S_x(1; D) − S_x(k; D) using a Laplace-smoothed n-gram, the measured values are estimator-dependent. A model with higher capacity would produce different surprisal estimates, and the difference at k=1 vs k=k* could be larger or smaller. No upper or lower bound relationship between n-gram CG and Transformer CG follows from either model being a better estimator of the true distribution. The n-gram measurements describe what a Laplace-smoothed count model finds in these corpora within the reliable k range (k ≤ 7 for NL1, k ≤ 8 for NL2, k ≤ 10 for Code1). Whether a more expressive model would show larger or smaller structural/lexical separation is an open empirical question.
 
 ### 5.5 Python tokenization as a required preprocessing step
 
@@ -410,7 +410,7 @@ A natural follow-on question is whether the context-dependency differences ident
 
 ### 5.7 Limitations and future work
 
-**Overview.** *Six limitations are disclosed explicitly: Laplace smoothing is suboptimal at high k; NL1 is directional not primary; NL2 has only five structural characters making Mann-Whitney underpowered; CG_peak has selection optimism that particularly affects the Code1 exploratory result; the reliable range ends at k=8; and the regression does not model character-level random intercepts. These are known limitations of the current study scope, not hidden failures — each is assessed for its impact on the reported findings.*
+**Overview.** *Six limitations are disclosed explicitly: Laplace smoothing is suboptimal at high k; NL1 is directional not primary; NL2 has only five structural characters making Mann-Whitney underpowered; CG_peak has selection optimism that particularly affects the Code1 exploratory result; the reliable range is corpus-specific (k ≤ 7 for NL1, k ≤ 8 for NL2, k ≤ 10 for Code1); and the regression does not model character-level random intercepts. These are known limitations of the current study scope, not hidden failures — each is assessed for its impact on the reported findings.*
 
 1. **Alternative smoothing**: Laplace smoothing is suboptimal at high k. Per-symbol coverage filtering (≥50%) and frequency control (β₄) address the primary Laplace bias mechanisms, and the coverage sensitivity analysis (Section 4.1) shows the NL2 finding is robust across all three thresholds. A true interpolated Kneser-Ney test would require recursive backoff (k → k-1 → ... → unigram), which is beyond the scope of this study. Flat-to-unigram discounting, tested but not reported as a primary result, is not a valid KN surrogate because at k ≥ 5 the unigram backoff dominates and collapses context-dependent surprisal estimates.
 
@@ -428,7 +428,7 @@ A natural follow-on question is whether the context-dependency differences ident
 
 ## 6. Conclusion
 
-We applied a per-symbol, corpus-conditional framework for measuring character-level context dependency across three corpora with Python tokenization stratification. The primary robust finding is in NL2 (Pride and Prejudice): structural symbols have a robustly steeper context-gain trajectory than lexical symbols after controlling for character frequency (β₃=+1.131, cluster-robust p=0.002, permutation p=0.001), stable across coverage thresholds and functional forms. NL1 (Shakespeare) shows the same direction (β₃=+0.549, cluster-robust p=0.033) but does not survive the character-label permutation test (p=0.093) and should be read as directional corroboration, not an independent replication. In Code1, the trajectory effect is null (β₃=−0.024, p=0.930); instead, structural symbols show an exploratory peak-gain difference (Mann-Whitney p=0.022, does not survive Bonferroni), motivating a distinction between the magnitude and trajectory of context dependence.
+We applied a per-symbol, corpus-conditional framework for measuring character-level context dependency across three corpora with Python tokenization stratification. The primary robust finding is in NL2 (Pride and Prejudice): structural symbols have a robustly steeper context-gain trajectory than lexical symbols after controlling for character frequency (β₃=+1.131, cluster-robust p=0.002, permutation p=0.001), stable across coverage thresholds and functional forms. NL1 (Shakespeare) shows the same direction (β₃=+0.551, cluster-robust p=0.033) but does not survive the character-label permutation test (p=0.093) and should be read as directional corroboration, not an independent replication. In Code1, the trajectory effect is null (β₃=−0.024, p=0.930); instead, structural symbols show an exploratory peak-gain difference (Mann-Whitney p=0.022, does not survive Bonferroni), motivating a distinction between the magnitude and trajectory of context dependence.
 
 Python tokenization reveals that 42% of Python stdlib characters are inside strings or comments; tokenizer stratification is required when interpreting punctuation specifically as executable syntax operators. The colon cross-corpus result shows grammar-enforced placement can produce lower context gain than discourse-governed usage, potentially because short repeated keywords are more informative than varied speaker names.
 
@@ -454,7 +454,7 @@ More broadly, these results suggest that context requirement is not necessarily 
 
 ## Appendix — Reproducibility
 
-**Code:** github.com/asbassan/which-characters-need-context  
+**Code:** github.com/asbassan/char-context-gain  
 **Run:** `python run_experiment_v3.py --db experiment_cache.db` (no GPU, ~15 min) → `cross_corpus_v3.csv`, `panel_v3_*.csv`  
 **Validation:** `python run_validations.py` (~15 min) → `results_robustness/permutation_test.csv`, `functional_form.csv`  
 **Outputs:** peaks_v3_*.csv, cross_corpus_v3.csv, context_curves_v3.png  
