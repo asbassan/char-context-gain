@@ -24,9 +24,28 @@ The main hypothesis: in natural language, structural characters show a steeper C
 
 ---
 
-## Quickest Path: Pre-Computed Results
+## Paper Results (Canonical)
 
-The SQLite cache is included. If you only want to run the regression and plot:
+The headline values in the manuscript come from `results_canonical_snapshot/` — **not** from `results_v3/`.
+
+| File | Contents |
+|------|----------|
+| `results_canonical_snapshot/robustness_b3.csv` | NL1 and NL2 β₃ values at τ = 0.25, 0.50, 0.75 |
+| `results_canonical_snapshot/code1_coverage_sensitivity.csv` | Code1 β₃ values (paper uses τ = 0.50 row: β₃ = −0.024, n = 456) |
+| `results_canonical_snapshot/panel_*.csv` | Regression panels for all reported coefficients |
+| `results_canonical_snapshot/CANONICAL_VALUES.md` | Summary table with all reported numbers |
+
+The v3 pipeline (`run_experiment_v3.py`) uses an updated adaptive k-selection procedure
+and produces β₃ values that differ materially from the manuscript
+(NL1: +0.101 vs +0.551; NL2: +0.500 vs +1.131; Code1: +0.079 vs −0.024 at τ = 0.50).
+Do not run `run_experiment_v3.py` expecting to reproduce the manuscript headline numbers;
+use `results_canonical_snapshot/` for that.
+
+---
+
+## Running the v3 Pipeline (updated; differs from paper values)
+
+The SQLite cache is included. To run the regression and plot with the updated pipeline:
 
 ```bash
 pip install numpy pandas scipy matplotlib
@@ -34,11 +53,12 @@ python run_experiment_v3.py --skip-compute
 ```
 
 This loads cached surprisals from `experiment_cache.db` and produces
-`results_v3/` in a few seconds — no recomputation needed.
+`results_v3/` in a few seconds. Note: `results_v3/` is the output of the updated
+pipeline and does **not** reproduce the manuscript headline β₃ values.
 
 ---
 
-## Full Replication (Laplace smoothing, ~15 min)
+## Full Replication of v3 Pipeline (Laplace smoothing, ~15 min)
 
 ```bash
 pip install numpy pandas scipy matplotlib
@@ -46,7 +66,7 @@ python run_experiment_v3.py
 ```
 
 Deletes nothing — completed (corpus, k) pairs are skipped on restart.
-Results written to `results_v3/`.
+Results written to `results_v3/`. See `results_canonical_snapshot/` for paper values.
 
 ### Requirements
 
@@ -108,14 +128,20 @@ results_v3/
   robustness_b3_v3.csv        Coverage sensitivity sweep
   context_curves_v3.png       Publication figure
 
-results_canonical_snapshot/   Locked reference values (pre-adaptive-k rerun)
+results_canonical_snapshot/   ← PAPER SOURCE: all manuscript β₃/SE/CI/p values come from here
   CANONICAL_VALUES.md         β₃ table + key per-character reference points
-  *.csv                       Snapshot CSVs
+  robustness_b3.csv           NL1/NL2 β₃ at τ = 0.25/0.50/0.75
+  code1_coverage_sensitivity.csv  Code1 β₃ at τ = 0.25/0.50/0.75
+  panel_*.csv                 Regression panels (canonical pipeline)
+  peaks_*.csv                 Per-character peak CG profiles (canonical pipeline)
 ```
 
 ---
 
 ## Key Results (Laplace, τ = 0.50)
+
+Values are from `results_canonical_snapshot/` (the source used in the manuscript).
+The v3 pipeline produces different numbers; see the Paper Results section above.
 
 | Corpus | k_max | β₃ | SE | 95 % CI | p |
 |---|---|---|---|---|---|
@@ -135,7 +161,7 @@ than lexical ones.
 |---|---|---|
 | Shakespeare | Natural language | Complete Works (public domain) |
 | Pride and Prejudice | Natural language | Project Gutenberg #1342 |
-| Python 3.12 stdlib | Source code | CPython local installation (163 files) |
+| Python 3.12 stdlib | Source code | CPython local installation (163 files in the reported experiment; replication on a different Python 3.12 installation may yield a different file count) |
 
 ---
 

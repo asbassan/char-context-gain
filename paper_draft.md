@@ -247,7 +247,7 @@ The negative β₁ values reflect that high-frequency lexical characters — whi
 
 NL2 is stable across all three thresholds, providing the most robust evidence for a structural-context interaction. NL1 provides threshold-sensitive evidence: significant at τ=0.25 and τ=0.50 but not at τ=0.75, where the stricter filter removes the higher-k observations for rare structural characters (!, ? with sym_cov 79–83% at k=6). Code1 is consistently not significant at any threshold (all three values from the canonical Python 3.12 pipeline). These findings should not be treated as equally robust: NL2's result survives coverage restriction, NL1's does not.
 
-**Character-label permutation test.** To verify that β₃ is not an artifact of which characters happen to be labelled structural, we ran 10,000 permutations of the structural/lexical label across characters within each corpus, holding the count of structural characters fixed (7 structural out of 56 for NL1; 5 out of 45, i.e., 5-to-40 structural-to-lexical, for NL2; 20 out of 78 for Code1). For each permutation we refitted OLS and recorded β₃. The one-tailed permutation p is the fraction of permutations where β₃_perm ≥ β₃_observed.
+**Character-label permutation test.** To verify that β₃ is not an artifact of which characters happen to be labelled structural, we ran 10,000 permutations of the structural/lexical label across characters within each corpus, holding the count of structural characters fixed (7 structural out of 56 for NL1; 5 out of 45, i.e., 5-to-40 structural-to-lexical, for NL2; 20 out of 77 for Code1). For each permutation we refitted OLS and recorded β₃. The one-tailed permutation p is the fraction of permutations where β₃_perm ≥ β₃_observed.
 
 | Corpus | β₃ | p cluster-robust | p permutation (N=10,000) |
 |--------|----|-----------------|--------------------------|
@@ -457,9 +457,9 @@ More broadly, these results suggest that context requirement is not necessarily 
 ## Appendix — Reproducibility
 
 **Code:** github.com/asbassan/char-context-gain  
-**Run:** `python run_experiment_v3.py --db experiment_cache.db` (no GPU, ~15 min) → `cross_corpus_v3.csv`, `panel_v3_*.csv`  
+**Canonical paper values:** All reported β₃, SE, CI, and p values are in `results_canonical_snapshot/`. The NL1/NL2 values are from `robustness_b3.csv` (τ = 0.50, laplace rows); Code1 values are from `code1_coverage_sensitivity.csv` (τ = 0.50 row). See `CANONICAL_VALUES.md` for a full summary table.  
+**Note:** The current `run_experiment_v3.py` pipeline uses an updated adaptive k-selection procedure that produces different β₃ values from the manuscript. To inspect the exact analysis that generated the reported results, read from `results_canonical_snapshot/` directly.  
 **Validation:** `python run_validations.py` (~15 min) → `results_robustness/permutation_test.csv`, `functional_form.csv`  
-**Outputs:** peaks_v3_*.csv, cross_corpus_v3.csv, context_curves_v3.png  
 **Seed:** 42 | **Smoothing:** Laplace (add-1) | **Min n to report:** 30  
 **Dependencies:** numpy, matplotlib, pandas, scipy
 
