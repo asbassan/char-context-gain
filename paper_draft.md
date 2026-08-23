@@ -4,7 +4,7 @@
 **Author:** Amar Bassan  
 **Affiliation:** Independent Researcher  
 **Date:** 2026-08-21  
-**Version:** v3 — adaptive k, coverage-based k_max, optional KenLM backend  
+**Version:** Manuscript experiment — per-corpus coverage-probe k_max (k≤7 NL1, k≤8 NL2, k≤10 Code1), Laplace smoothing, cluster-robust SEs  
 **Repository:** github.com/asbassan/char-context-gain  
 **Zenodo DOI:** [to be assigned]
 
@@ -24,9 +24,9 @@ Across three corpora — tinyshakespeare (NL1), Pride and Prejudice (NL2), Pytho
 
 CG_x(k; D) = β₀ + β₁ log₂(k) + β₂ Structural_x + **β₃ [log₂(k) × Structural_x]** + β₄ log₂(Freq_x) + ε
 
-The central quantity is β₃: a positive value means structural symbols accumulate CG faster per doubling of context than lexical symbols do, after controlling for frequency. **NL2 provides the strongest inferential finding**: β₃=+1.131 (cluster-robust p=0.002, permutation p=0.001, stable across coverage thresholds and all functional forms). NL1 is directional but not permutation-significant: β₃=+0.551 (cluster-robust p=0.033, permutation p=0.093). In Code1 β₃=−0.024 (p=0.930) is null for the slope; Code1 shows an exploratory peak-gain difference — structural symbols have higher peak context gain (Mann-Whitney p=0.022, exploratory; does not survive Bonferroni), motivating a distinction between the *trajectory* and *magnitude* of context gain. Mann-Whitney tests are also significant in NL1 (p=0.013). This divergence between slope and peak tests is interpretively informative: they measure different aspects of context dependence.
+The central quantity is β₃: a positive value means structural symbols accumulate CG faster per doubling of context than lexical symbols do, after controlling for frequency. **NL2 provides the strongest inferential finding**: β₃=+1.131 (cluster-robust p=0.002, permutation p=0.001, stable across coverage thresholds and all functional forms). NL1 is directional but not permutation-significant: β₃=+0.551 (cluster-robust p=0.033, permutation p=0.093). In Code1 β₃=−0.024 (p=0.930) is null for the slope; Code1 shows an exploratory peak-gain difference — structural symbols have higher peak context gain (Mann-Whitney p=0.022, exploratory; does not survive Bonferroni), motivating a distinction between the *trajectory* and *magnitude* of context gain. The Mann-Whitney test is also significant in NL1 (p=0.013). This divergence between slope and peak tests is interpretively informative: they measure different aspects of context dependence.
 
-Python tokenization of Code1 reveals that 33.8% of characters are inside string literals and 8.6% inside comments — only 5.4% are actual Python syntax operators. The primary structural/lexical comparison in Code1 uses only syntax-stratum characters, excluding contaminated punctuation from strings and comments.
+Python tokenization of Code1 reveals that 33.8% of characters are inside string literals and 8.6% inside comments — only 5.4% are actual Python syntax operators. The structural/lexical comparison in Code1 uses only syntax-stratum characters, excluding contaminated punctuation from strings and comments.
 
 The reliable n-gram range is corpus-specific: k ≤ 7 for NL1, k ≤ 8 for NL2, and k ≤ 10 for Code1, determined by a per-symbol coverage diagnostic. All CG values are finite-data estimates subject to n-gram sparsity and smoothing bias.
 
@@ -456,12 +456,19 @@ More broadly, these results suggest that context requirement is not necessarily 
 
 ## Appendix — Reproducibility
 
-**Code:** github.com/asbassan/char-context-gain  
-**Canonical paper values:** All reported β₃, SE, CI, and p values are in `results_canonical_snapshot/`. The NL1/NL2 values are from `robustness_b3.csv` (τ = 0.50, laplace rows); Code1 values are from `code1_coverage_sensitivity.csv` (τ = 0.50 row). See `CANONICAL_VALUES.md` for a full summary table.  
-**Note:** The current `run_experiment_v3.py` pipeline uses an updated adaptive k-selection procedure that produces different β₃ values from the manuscript. To inspect the exact analysis that generated the reported results, read from `results_canonical_snapshot/` directly.  
-**Validation:** `python run_validations.py` (~15 min) → `results_robustness/permutation_test.csv`, `functional_form.csv`  
-**Seed:** 42 | **Smoothing:** Laplace (add-1) | **Min n to report:** 30  
-**Dependencies:** numpy, matplotlib, pandas, scipy
+**Code:** github.com/asbassan/char-context-gain
+
+**Exact pipeline for manuscript values (inputs → code → outputs):**
+
+| Step | Command | Output used in paper |
+|------|---------|----------------------|
+| 1 | `python run_experiment_v2.py` | `results_canonical_snapshot/panel_*.csv` — regression panels for NL1/NL2 |
+| 2 | `python run_validations.py` | `results_canonical_snapshot/robustness_b3.csv` — NL1/NL2 β₃ at all τ |
+| 3 | `python code1_coverage_sensitivity.py` | `results_canonical_snapshot/code1_coverage_sensitivity.csv` — Code1 β₃ |
+
+All canonical outputs are preserved in `results_canonical_snapshot/`; `CANONICAL_VALUES.md` in that directory summarises the headline numbers. The repository also contains `run_experiment_v3.py`, which uses a per-character adaptive k-search and produces different β₃ values — it is a subsequent updated pipeline, not the one used for reported results.
+
+**Seed:** 42 | **Smoothing:** Laplace (add-1) | **Min n to report:** 30 | **Dependencies:** numpy, matplotlib, pandas, scipy
 
 The experiment script is idempotent: completed (corpus, k) pairs are stored in an SQLite cache and skipped on restart, so interrupted runs resume from where they stopped. The k range for each corpus is derived automatically from a coverage probe (Section 3.5) rather than hardcoded; this produced k ≤ 7 for NL1, k ≤ 8 for NL2, and k ≤ 10 for Code1.
 
