@@ -1,48 +1,131 @@
 # Which Characters Need Context?
-## Measuring Character-Specific Context Horizons in Natural Language and Source Code
+### Measuring Character-Specific Context Horizons in Natural Language and Source Code
 
 **Author:** Amar Bassan  
-**Status:** v2 complete. PARTIAL GO — Mann-Whitney significant in NL1 + Code1; β₃ > 0 all three corpora.  
 **Preprint:** [Zenodo DOI — to be assigned]  
-**Companion book:** Transformers From Scratch (Leanpub)
+**Companion book:** *Transformers From Scratch* (Leanpub)
 
 ---
 
-## Reproducing the Experiment
+## What This Is
+
+This repo contains the full experiment code, corpora, and results for a study of how much
+**preceding context** reduces surprisal for individual characters — and whether **structural**
+characters (`.`, `,`, `!`, `(`, `:`, …) benefit more from context than **lexical** ones
+(letters, digits).
+
+The key metric is **Context Gain**:
+
+> CG_x(k; D) = S_x(1; D) − S_x(k; D)
+
+where S_x(k) is the mean surprisal of character x given k preceding characters.
+The main hypothesis: in natural language, structural characters show a steeper CG curve
+(larger β₃ on the log₂(k) × Structural interaction term).
+
+---
+
+## Quickest Path: Pre-Computed Results
+
+The SQLite cache is included. If you only want to run the regression and plot:
+
+```bash
+pip install numpy pandas scipy matplotlib
+python run_experiment_v3.py --skip-compute
+```
+
+This loads cached surprisals from `experiment_cache.db` and produces
+`results_v3/` in a few seconds — no recomputation needed.
+
+---
+
+## Full Replication (Laplace smoothing, ~15 min)
+
+```bash
+pip install numpy pandas scipy matplotlib
+python run_experiment_v3.py
+```
+
+Deletes nothing — completed (corpus, k) pairs are skipped on restart.
+Results written to `results_v3/`.
 
 ### Requirements
-```
-pip install torch numpy matplotlib scipy pandas
-```
 
-### Run
+Python 3.10+ with:
 ```
-python run_experiment_v2.py
+numpy pandas scipy matplotlib
 ```
-No GPU required. Estimated runtime: ~15 minutes. Results saved to `results_v2/`.
+No GPU required. The Python stdlib corpus is sourced from your local Python 3.12
+installation automatically.
 
 ---
 
-## Files
+## KenLM Backend (Modified Kneser-Ney, requires Docker)
 
-| File | Description |
-|---|---|
-| `run_experiment_v2.py` | Full per-symbol experiment with Python tokenization — **run this** |
-| `experiment.ipynb` | Notebook version of experiment |
-| `run_experiment.py` | v1 experiment (per-class, superseded by v2) |
-| `ngram_go_nogo.py` | Quick GO/NO-GO on Shakespeare only |
-| `requirements.txt` | Python dependencies |
-| `results_v2/` | v2 outputs (auto-generated) |
-| `results/` | v1 outputs (archived) |
+For large corpora (>100 M chars) the in-memory Laplace backend becomes
+memory-prohibitive. KenLM (Heafield, 2011) uses a compressed trie under a fixed
+memory budget. A Docker image compiles KenLM and runs the experiment inside the
+container while keeping all output files on your local filesystem.
 
-### Results directory — v2
+**Build image and run (first time ~10 min, subsequent runs skip model build):**
 
-| File | Description |
-|---|---|
-| `peaks_v2_*.csv` | Per-symbol CG_peak, CI, k_peak, coverage, type for each corpus |
-| `cross_corpus_v2.csv` | Mann-Whitney summary + regression β₃ per corpus |
-| `context_curves_v2.png/pdf` | Publication figures (shaded sparsity region) |
-| `config_v2.json` | Full reproducibility config |
+```powershell
+# Windows PowerShell
+.\docker_run.ps1
+```
+
+```bash
+# Linux / macOS
+docker build -t kenlm-experiment .
+docker run --rm -v "$PWD:/workspace" kenlm-experiment \
+    run_experiment_v3.py --backend kenlm \
+    --db /workspace/experiment_cache_kenlm.db
+```
+
+Pre-built KenLM binary models (`.bin`) are **not** included in the repo — they are
+architecture-specific (Linux x86_64). They are rebuilt automatically on first run and
+cached in `kenlm_models/` on your local machine.
+
+---
+
+## Repository Layout
+
+```
+run_experiment_v3.py          Main experiment (Laplace + KenLM backends)
+Dockerfile                    Builds KenLM on Linux, runs experiment in container
+docker_run.ps1                PowerShell helper: build image / run / open shell
+
+corpus_shakespeare.txt        Complete Works of Shakespeare (public domain)
+corpus_pride_prejudice.txt    Pride and Prejudice — Gutenberg #1342 (public domain)
+                              Python 3.12 stdlib sourced from local install at runtime
+
+experiment_cache.db           Pre-computed Laplace surprisals (restartable cache)
+experiment_cache_kenlm.db     Pre-computed KenLM surprisals
+
+results_v3/
+  cross_corpus_v3.csv         Per-corpus β₃, SE, CI, p, n
+  panel_v3_*.csv              Per-character (char, k, CG, type, …) panel data
+  peaks_v3_*.csv              Per-character k_peak, CG_peak, sym_cov
+  robustness_b3_v3.csv        Coverage sensitivity sweep
+  context_curves_v3.png       Publication figure
+
+results_canonical_snapshot/   Locked reference values (pre-adaptive-k rerun)
+  CANONICAL_VALUES.md         β₃ table + key per-character reference points
+  *.csv                       Snapshot CSVs
+```
+
+---
+
+## Key Results (Laplace, τ = 0.50)
+
+| Corpus | k_max | β₃ | SE | 95 % CI | p |
+|---|---|---|---|---|---|
+| NL1 — Pride & Prejudice | 8 | **+1.131** | 0.337 | [+0.452, +1.810] | 0.0016 |
+| NL2 — Shakespeare | 7 | **+0.551** | 0.250 | [+0.049, +1.053] | 0.0319 |
+| Code1 — Python stdlib | 10 | −0.024 | 0.262 | [−0.481, +0.561] | 0.9304 |
+
+β₃ > 0 in both NL corpora (NL1 survives 3-test Bonferroni at α = 0.017).
+β₃ ≈ 0 for code — structural characters in Python are not more context-dependent
+than lexical ones.
 
 ---
 
@@ -50,33 +133,34 @@ No GPU required. Estimated runtime: ~15 minutes. Results saved to `results_v2/`.
 
 | Corpus | Domain | Source |
 |---|---|---|
-| tinyshakespeare | Natural language | github.com/karpathy/char-rnn |
+| Shakespeare | Natural language | Complete Works (public domain) |
 | Pride and Prejudice | Natural language | Project Gutenberg #1342 |
-| Python 3.12 stdlib | Source code | CPython local installation |
+| Python 3.12 stdlib | Source code | CPython local installation (164 files) |
 
 ---
 
 ## Metrics
 
-| Metric | Formula | Interpretation |
-|---|---|---|
-| S_x(k; D) | E[-log₂ P(X_t\|context) \| X_t = x] | Mean surprisal of char x at context k |
-| CG_x(k; D) | S_x(1; D) − S_x(k; D) | Context gain over bigram baseline |
-| k_peak(x; D) | argmax CG within reliable k range | Context length of peak gain |
-| LS_x(D) | 1 − CG_peak / S_x(1) | Local sufficiency (0=fully context-dependent) |
-| β₃ | regression: log₂(k) × Structural | Structural benefit per unit log-context, controlling for frequency |
+| Symbol | Definition |
+|---|---|
+| S_x(k; D) | Mean surprisal of char x given k preceding chars (Laplace-smoothed) |
+| CG_x(k; D) | S_x(1; D) − S_x(k; D) — Context Gain over unigram baseline |
+| k_peak | argmax_k CG_x(k) within the reliable k range |
+| β₃ | Coefficient on log₂(k) × Structural in the panel regression |
 
 ---
 
-## Result Summary (v2 — PARTIAL GO)
+## Citation
 
-| Corpus | Struct. n | Lex. n | Median CG ratio | Mann-Whitney p | β₃ | Decision |
-|--------|-----------|--------|-----------------|---------------|----|----------|
-| NL1 shakespeare | 7 | 49 | 2.52× | 0.013 | +0.514 | GO |
-| NL2 pride_prej | 5 | 40 | 1.18× | 0.148 | +1.142 | NO-GO (low power) |
-| Code1 python | 20 | 58 | 1.23× | 0.022 | +0.088 | GO |
-
-β₃ > 0 across all three corpora — primary finding.
+```
+@misc{bassan2026context,
+  title  = {Which Characters Need Context? Measuring Character-Specific
+             Context Horizons in Natural Language and Source Code},
+  author = {Bassan, Amar},
+  year   = {2026},
+  note   = {Preprint. \url{https://github.com/asbassan/char-context-gain}}
+}
+```
 
 ---
 
