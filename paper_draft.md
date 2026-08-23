@@ -410,7 +410,7 @@ A natural follow-on question is whether the context-dependency differences ident
 
 ### 5.7 Limitations and future work
 
-**Overview.** *Six limitations are disclosed explicitly: Laplace smoothing is suboptimal at high k; NL1 is directional not primary; NL2 has only five structural characters making Mann-Whitney underpowered; CG_peak has selection optimism that particularly affects the Code1 exploratory result; the reliable range is corpus-specific (k ≤ 7 for NL1, k ≤ 8 for NL2, k ≤ 10 for Code1); and the regression does not model character-level random intercepts. These are known limitations of the current study scope, not hidden failures — each is assessed for its impact on the reported findings.*
+**Overview.** *Seven limitations are disclosed explicitly: Laplace smoothing is suboptimal at high k; NL1 is directional not primary; NL2 has only five structural characters making Mann-Whitney underpowered; CG_peak has selection optimism that particularly affects the Code1 exploratory result; the reliable range is corpus-specific (k ≤ 7 for NL1, k ≤ 8 for NL2, k ≤ 10 for Code1); the regression does not model character-level random intercepts; and the structural/lexical classification scheme is one of several defensible alternatives. These are known limitations of the current study scope, not hidden failures — each is assessed for its impact on the reported findings.*
 
 1. **Alternative smoothing**: Laplace smoothing is suboptimal at high k. Per-symbol coverage filtering (≥50%) and frequency control (β₄) address the primary Laplace bias mechanisms, and the coverage sensitivity analysis (Section 4.1) shows the NL2 finding is robust across all three thresholds. A true interpolated Kneser-Ney test would require recursive backoff (k → k-1 → ... → unigram), which is beyond the scope of this study. Flat-to-unigram discounting, tested but not reported as a primary result, is not a valid KN surrogate because at k ≥ 5 the unigram backoff dominates and collapses context-dependent surprisal estimates.
 
@@ -423,6 +423,8 @@ A natural follow-on question is whether the context-dependency differences ident
 5. **k range and corpus scale**: The reliable range is corpus-specific: k ≤ 7 for NL1, k ≤ 8 for NL2, and k ≤ 10 for Code1, determined by the per-symbol coverage probe (Section 3.5). For corpora exceeding ~100M characters, the in-memory n-gram frequency tables used here become memory-prohibitive; KenLM (Heafield, 2011) is the natural replacement, building a compressed trie under a fixed memory budget — though it uses Modified Kneser-Ney smoothing, so CG values would not be numerically identical to those reported here. A neural character-level model could further extend the reliable range beyond k = 10.
 
 6. **Regression random effects**: The regression uses cluster-robust standard errors (clustered by character), which accounts for within-character correlation across k values. A character random-intercept model would additionally capture character-level variance in baseline surprisal.
+
+7. **Classification sensitivity**: The natural-language comparison treats alphabetic characters, digits, and space as lexical, while punctuation and delimiters are structural. Alternative classification schemes — for example, restricting the lexical category to alphabetic characters only and treating spaces or digits separately — could test how sensitive the structural/lexical interaction is to these category definitions.
 
 ---
 
