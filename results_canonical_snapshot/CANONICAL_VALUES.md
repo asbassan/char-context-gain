@@ -1,0 +1,94 @@
+# Canonical Paper Values — Pre-rerun Snapshot
+
+**Pipeline**: Python 3.12, 80/10/10 train/val/test split, Laplace smoothing,
+MAX_BOOT_SAMPLES=5000, τ=0.50 (coverage threshold), cluster-robust sandwich SEs.
+
+Saved before rerunning experiments with character_context_profile.py v2 (adaptive
+gradient-ascent k-search). Compare new values against these after the rerun.
+
+---
+
+## Primary regression results — β₃ interaction (log₂k × Structural)
+
+| Corpus          | τ   | β₃     | SE    | CI 95%            | p       | n obs | G chars |
+|-----------------|-----|--------|-------|-------------------|---------|-------|---------|
+| NL1 (Pride & P) | 0.50| +1.131 | 0.337 | [+0.452, +1.810]  | 0.0016  | 310   | 45      |
+| NL2 (Shakespeare)| 0.50| +0.551 | 0.250 | [+0.049, +1.053]  | 0.0319  | 272   | 56      |
+| Code1 (Python)  | 0.50| −0.024 | 0.262 | [−0.481, +0.561]  | 0.9304  | 456   | 78      |
+
+**Paper decision**: NL1 survives 3-test Bonferroni (α=0.017); NL2 directional;
+Code1 not significant.
+
+Source: `robustness_b3.csv` (NL1/NL2 laplace rows) + `code1_coverage_sensitivity.csv`
+Note: n=440 in robustness_b3.csv for Code1 (earlier run). Canonical n=456 from
+code1_coverage_sensitivity.py (163 files, 4,577,353 chars). Paper uses n=456.
+
+---
+
+## Coverage sensitivity — Code1 (Python stdlib)
+
+| τ    | β₃     | p      | n obs | G chars |
+|------|--------|--------|-------|---------|
+| 0.25 | +0.008 | 0.9725 | 521   | 77      |
+| 0.50 | −0.024 | 0.9304 | 456   | 77      |
+| 0.75 | −0.059 | 0.8668 | 293   | 77      |
+
+Source: `code1_coverage_sensitivity.csv`
+
+---
+
+## Coverage sensitivity — NL1 and NL2
+
+| Corpus            | τ    | β₃     | p      | n obs | G chars |
+|-------------------|------|--------|--------|-------|---------|
+| NL2 (Shakespeare) | 0.25 | +0.636 | 0.0096 | 318   | 56      |
+| NL2 (Shakespeare) | 0.50 | +0.551 | 0.0319 | 272   | 56      |
+| NL2 (Shakespeare) | 0.75 | +0.337 | 0.1836 | 203   | 56      |
+| NL1 (Pride & P)   | 0.25 | +1.142 | 0.0015 | 315   | 45      |
+| NL1 (Pride & P)   | 0.50 | +1.131 | 0.0016 | 310   | 45      |
+| NL1 (Pride & P)   | 0.75 | +0.982 | 0.0031 | 239   | 45      |
+
+Source: `robustness_b3.csv` (Laplace smoother rows)
+
+---
+
+## Smoother robustness (τ=0.50, interpolated-discount)
+
+| Corpus            | β₃     | p      | n obs |
+|-------------------|--------|--------|-------|
+| NL2 (Shakespeare) | −0.175 | 0.421  | 272   |
+| NL1 (Pride & P)   | +0.269 | 0.211  | 310   |
+| Code1 (Python)    | −0.482 | 0.033  | 440   |
+
+Source: `robustness_b3.csv` (interp_disc smoother rows)
+
+---
+
+## Selected per-character k_peak values (canonical)
+
+These are the k_peak values from the exhaustive n-gram search (max k=8).
+After rerun with adaptive search, compare the new k_peak per character
+against these. Values in `cross_corpus_v2.csv`.
+
+Key reference points:
+- Pride & Prej `"!"` : k_peak=7, CG_peak=+3.568 bits
+- Pride & Prej `"?"` : k_peak=8, CG_peak=+3.126 bits
+- Pride & Prej `";"` : k_peak=4, CG_peak=+1.933 bits
+- Pride & Prej `"."` : k_peak=3, CG_peak=+1.543 bits
+- Shakespeare `"!"` : k_peak=6, CG_peak=+2.481 bits
+- Python `"("` : k_peak=3, CG_peak=+1.667 bits
+- Python `"="` : k_peak=3, CG_peak=+1.925 bits
+- Python `"{"` : k_peak=3, CG_peak=+3.351 bits
+
+Full per-character table: `cross_corpus_v2.csv`
+
+---
+
+## What to check after rerun
+
+1. β₃ signs and significance should be preserved (NL1 positive/significant,
+   Code1 near-zero/non-significant)
+2. Per-character k_peak may shift ≤1 with adaptive search (normal: gradient
+   ascent sometimes stops one step earlier or later than exhaustive search)
+3. Flag any character where k_peak changes by >2 — investigate coverage
+4. Coverage sensitivity conclusions should hold (all three Code1 τ values n.s.)

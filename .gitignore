@@ -1,0 +1,41 @@
+# KenLM binary models — architecture-specific, not portable
+kenlm_models/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Intermediate / large corpora (auto-downloaded by the script)
+tinyshakespeare.txt
+
+# Old / intermediate scripts and notebooks
+run_experiment.py
+run_experiment_v2.py
+run_pilot.py
+run_robustness.py
+run_validations.py
+character_context_profile.py
+code1_coverage_sensitivity.py
+audit_k1.py
+make_pdf.py
+ngram_go_nogo.py
+experiment.ipynb
+pilot_experiment.ipynb
+
+# Old results directories
+results/
+results_v2/
+results_robustness/
+pilot_context_curves.png
+
+# Old cache files
+cg_cache.db
+*.log
+
+# Generated PDF (built from paper_draft.md)
+paper_draft.pdf
+
+# OS noise
+.DS_Store
+Thumbs.db
