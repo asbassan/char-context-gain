@@ -9,21 +9,18 @@ __pycache__/
 # Intermediate / large corpora (auto-downloaded by the script)
 tinyshakespeare.txt
 
-# Old / intermediate scripts and notebooks
+# Exploratory / pilot scripts and notebooks (not used in paper)
 run_experiment.py
-run_experiment_v2.py
 run_pilot.py
 run_robustness.py
-code1_coverage_sensitivity.py
 make_pdf.py
 ngram_go_nogo.py
 experiment.ipynb
 pilot_experiment.ipynb
 
-# Old results directories
+# Old results directories (content preserved in results_canonical_snapshot/)
 results/
 results_v2/
-results_robustness/
 pilot_context_curves.png
 
 # Old cache files

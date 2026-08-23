@@ -1,0 +1,10 @@
+corpus,model,n_params,AIC,BIC,b_interaction,se_interaction,p_interaction,R2
+shakespeare,log2(k),5,-12.3,5.73,0.54868,0.25023,0.03258,0.3929
+shakespeare,k_linear,5,-15.39,2.64,0.20612,0.09416,0.03285,0.3997
+shakespeare,categorical_k,13,-13.75,33.13,0.57265,,,0.4306
+pride_prej,log2(k),5,-186.66,-167.97,1.13084,0.33685,0.00163,0.7007
+pride_prej,k_linear,5,-219.86,-201.17,0.37532,0.10941,0.00132,0.7311
+pride_prej,categorical_k,15,-241.48,-185.44,1.39797,,,0.7649
+python_stdlib,log2(k),5,3.33,23.95,-0.02431,0.2775,0.93044,0.5709
+python_stdlib,k_linear,5,0.02,20.63,-0.00149,0.09535,0.98757,0.574
+python_stdlib,categorical_k,15,5.51,67.35,-0.11856,,,0.5874

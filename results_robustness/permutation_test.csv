@@ -1,0 +1,4 @@
+corpus,n_chars,n_structural,n_lexical,b3_observed,p_cluster_robust,p_permutation,null_b3_mean,null_b3_sd,null_b3_95th,n_permutations
+shakespeare,56,7,49,0.54868,0.03258,0.0933,0.00309,0.40137,0.69296,10000
+pride_prej,45,5,40,1.13084,0.00163,0.001,0.00442,0.34366,0.60718,10000
+python_stdlib,77,20,57,-0.02431,0.93044,0.532,0.00085,0.27684,0.46572,10000

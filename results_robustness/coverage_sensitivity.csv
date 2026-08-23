@@ -1,0 +1,10 @@
+corpus,tau,b3,p
+shakespeare,0.25,n/a (needs re-run),n/a
+shakespeare,0.5,0.54868,0.03258
+shakespeare,0.75,n/a (needs re-run),n/a
+pride_prej,0.25,n/a (needs re-run),n/a
+pride_prej,0.5,1.13084,0.00163
+pride_prej,0.75,n/a (needs re-run),n/a
+python_stdlib,0.25,n/a (needs re-run),n/a
+python_stdlib,0.5,-0.02431,0.93044
+python_stdlib,0.75,n/a (needs re-run),n/a
