@@ -4,8 +4,8 @@
 **Author:** Amar Bassan  
 **Affiliation:** Independent Researcher  
 **Date:** 2026-08-21  
-**Version:** v2 — per-symbol analysis with Python tokenization  
-**Repository:** github.com/asbassan/which-characters-need-context  
+**Version:** v3 — adaptive k, coverage-based k_max, KenLM backend  
+**Repository:** github.com/asbassan/char-context-gain  
 **Zenodo DOI:** [to be assigned]
 
 ---
@@ -24,7 +24,7 @@ Across three corpora — tinyshakespeare (NL1), Pride and Prejudice (NL2), Pytho
 
 CG_x(k; D) = β₀ + β₁ log₂(k) + β₂ Structural_x + **β₃ [log₂(k) × Structural_x]** + β₄ log₂(Freq_x) + ε
 
-The central quantity is β₃: a positive value means structural symbols accumulate CG faster per doubling of context than lexical symbols do, after controlling for frequency. **NL2 is the primary robust finding**: β₃=+1.131 (cluster-robust p=0.002, permutation p=0.001, stable across coverage thresholds and all functional forms). NL1 is directional but not permutation-significant: β₃=+0.549 (cluster-robust p=0.033, permutation p=0.093). In Code1 β₃=−0.024 (p=0.930) is null for the slope; Code1 shows an exploratory peak-gain difference — structural symbols have higher peak context gain (Mann-Whitney p=0.022, exploratory; does not survive Bonferroni), motivating a distinction between the *trajectory* and *magnitude* of context gain. Mann-Whitney tests are also significant in NL1 (p=0.013). This divergence between slope and peak tests is interpretively informative: they measure different aspects of context dependence.
+The central quantity is β₃: a positive value means structural symbols accumulate CG faster per doubling of context than lexical symbols do, after controlling for frequency. **NL2 is the primary robust finding**: β₃=+1.131 (cluster-robust p=0.002, permutation p=0.001, stable across coverage thresholds and all functional forms). NL1 is directional but not permutation-significant: β₃=+0.551 (cluster-robust p=0.033, permutation p=0.093). In Code1 β₃=−0.024 (p=0.930) is null for the slope; Code1 shows an exploratory peak-gain difference — structural symbols have higher peak context gain (Mann-Whitney p=0.022, exploratory; does not survive Bonferroni), motivating a distinction between the *trajectory* and *magnitude* of context gain. Mann-Whitney tests are also significant in NL1 (p=0.013). This divergence between slope and peak tests is interpretively informative: they measure different aspects of context dependence.
 
 Python tokenization of Code1 reveals that 33.8% of characters are inside string literals and 8.6% inside comments — only 5.4% are actual Python syntax operators. The primary structural/lexical comparison in Code1 uses only syntax-stratum characters, excluding contaminated punctuation from strings and comments.
 
@@ -146,7 +146,7 @@ We report the **reliable k range** as k where global Coverage(k; D) ≥ 50%. We 
 |--------|-----------------|-------------|
 | NL1 tinyshakespeare | k ≤ 7 | 43.9% — sparse |
 | NL2 Pride & Prejudice | k ≤ 8 | 61.6% |
-| Code1 Python stdlib | k ≤ 8 | 63.1% |
+| Code1 Python stdlib | k ≤ 10 | 63.1% |
 
 NL2 stays reliable at k=8 despite being the smallest corpus. NL1 breaks at k=8 despite being larger. This is an observed coverage difference between the two corpora; the mechanism — whether it reflects authorial consistency, genre, or something else — is not directly measured here and should not be interpreted as a claim about Austen's prose style.
 
@@ -201,9 +201,9 @@ OLS with standard errors clustered by character (G = number of unique characters
 
 | Corpus | n obs | G (chars) | R² | β₃ | SE | 95% CI | p |
 |--------|-------|-----------|----|----|-----|--------|---|
-| NL1 shakespeare | 272 | 56 | 0.393 | **+0.549** | 0.250 | [+0.047, +1.050] | **0.033** |
+| NL1 shakespeare | 272 | 56 | 0.393 | **+0.551** | 0.250 | [+0.049, +1.053] | **0.033** |
 | NL2 pride_prej | 310 | 45 | 0.701 | **+1.131** | 0.337 | [+0.452, +1.810] | **0.002** |
-| Code1 python | 456 | 77 | 0.571 | −0.024 | 0.278 | [−0.577, +0.528] | 0.930 |
+| Code1 python | 456 | 77 | 0.571 | −0.024 | 0.262 | [−0.481, +0.561] | 0.930 |
 
 Full coefficient table — NL1 (shakespeare):
 
@@ -212,7 +212,7 @@ Full coefficient table — NL1 (shakespeare):
 | intercept | −1.300 | 0.486 | [−2.275, −0.326] | 0.010 |
 | log₂(k) | −0.242 | 0.145 | [−0.533, +0.048] | 0.101 |
 | Structural | −0.369 | 0.490 | [−1.351, +0.614] | 0.455 |
-| **log₂(k)×Structural** | **+0.549** | **0.250** | **[+0.047, +1.050]** | **0.033** |
+| **log₂(k)×Structural** | **+0.551** | **0.250** | **[+0.049, +1.053]** | **0.033** |
 | log₂(Freq) | −0.315 | 0.051 | [−0.416, −0.213] | <0.001 |
 
 Full coefficient table — NL2 (pride_prej):
@@ -232,10 +232,10 @@ Full coefficient table — Code1 (python):
 | intercept | −2.315 | 0.551 | [−3.413, −1.217] | <0.001 |
 | log₂(k) | −0.133 | 0.153 | [−0.438, +0.171] | 0.386 |
 | Structural | +0.202 | 0.565 | [−0.924, +1.327] | 0.722 |
-| **log₂(k)×Structural** | **−0.024** | **0.278** | **[−0.577, +0.528]** | **0.930** |
+| **log₂(k)×Structural** | **−0.024** | **0.262** | **[−0.481, +0.561]** | **0.930** |
 | log₂(Freq) | −0.467 | 0.045 | [−0.557, −0.377] | <0.001 |
 
-The negative β₁ values reflect that high-frequency lexical characters — which dominate the panel — achieve most of their context gain at k=2–3 and then plateau or slightly reverse; the regression fits this average downward trend. This does not mean context is unhelpful: for structural characters in NL2 and NL1, the effective slope is β₁ + β₃. In NL2, β₁ + β₃ = −0.856 + 1.131 = +0.275 (positive), and in NL1, −0.242 + 0.549 = +0.307 (positive) — structural characters' CG continues to grow with log₂(k) within the reliable range, consistent with the observed k_peak values of 4–6 for most structural characters. For Code1, β₃ is null (−0.024, p=0.930), so no differential slope interpretation applies; structural characters in Python reach their CG peak at k=2–3 at roughly the same rate as lexical characters. The negative β₂ (Structural main effect) in NL2 represents the structural-vs-lexical difference extrapolated at log₂(k)=0, outside the regression's observed range; its sign should not be interpreted substantively. The meaningful coefficient is β₃.
+The negative β₁ values reflect that high-frequency lexical characters — which dominate the panel — achieve most of their context gain at k=2–3 and then plateau or slightly reverse; the regression fits this average downward trend. This does not mean context is unhelpful: for structural characters in NL2 and NL1, the effective slope is β₁ + β₃. In NL2, β₁ + β₃ = −0.856 + 1.131 = +0.275 (positive), and in NL1, −0.242 + 0.551 = +0.309 (positive) — structural characters' CG continues to grow with log₂(k) within the reliable range, consistent with the observed k_peak values of 4–6 for most structural characters. For Code1, β₃ is null (−0.024, p=0.930), so no differential slope interpretation applies; structural characters in Python reach their CG peak at k=2–3 at roughly the same rate as lexical characters. The negative β₂ (Structural main effect) in NL2 represents the structural-vs-lexical difference extrapolated at log₂(k)=0, outside the regression's observed range; its sign should not be interpreted substantively. The meaningful coefficient is β₃.
 
 **Coverage threshold sensitivity.** The table below shows β₃ at per-symbol coverage thresholds τ = 0.25, 0.50, and 0.75 (Laplace smoothing, cluster-robust SEs throughout). A result is marked significant if p < 0.05.
 
@@ -257,7 +257,7 @@ NL2 is stable across all three thresholds, providing the most robust evidence fo
 
 NL2's permutation p = 0.001: approximately 10 of 10,000 random label assignments produced β₃_perm ≥ β₃_obs (at fixed 5-to-40 structural-to-lexical proportions). This provides additional robustness evidence for the NL2 finding despite having only five structural character clusters. NL1's cluster-robust p = 0.033 does not survive permutation (p = 0.093): with G = 7 structural clusters, the cluster-robust t-distribution approximation is optimistic. NL1 evidence should be treated as directional, not primary. Code1 is null under all specifications (β₃=−0.024, p=0.930, permutation p=0.532).
 
-**Numerical note.** The permutation loop uses OLS point estimates; OLS and cluster-robust OLS produce identical coefficients (they differ only in standard errors). All permutation and functional form checks load the regression panel saved by run_experiment_v2.py (results_v2/panel_*.csv), ensuring exact numerical agreement with the main regression table.
+**Numerical note.** The permutation loop uses OLS point estimates; OLS and cluster-robust OLS produce identical coefficients (they differ only in standard errors). All permutation and functional form checks load the regression panel saved by run_experiment_v3.py (results_v3/panel_v3_*.csv), ensuring exact numerical agreement with the main regression table.
 
 **Functional form comparison.** We fit three versions of the regression, varying only how k enters the model: M1 (log₂k, the main model), M2 (linear k), and M3 (categorical k, one dummy per k value with k=2 as reference, interaction terms likewise). AIC is computed as n·ln(RSS/n) + 2p; lower is better.
 
@@ -366,7 +366,7 @@ The central claim is not "structural symbols have 3× higher CG." That claim was
 
 > **NL2 (primary robust finding):** Structural symbols have a robustly steeper rate of context-gain per unit log-context than lexical symbols after controlling for character frequency (β₃=+1.131, cluster-robust p=0.002, permutation p=0.001; stable across coverage thresholds and functional forms).
 >
-> **NL1 (directional):** Same sign (β₃=+0.549, cluster-robust p=0.033) but does not survive the character-label permutation test (p=0.093) or the 75% coverage threshold. Treated as corroborating NL2, not an independent replication.
+> **NL1 (directional):** Same sign (β₃=+0.551, cluster-robust p=0.033) but does not survive the character-label permutation test (p=0.093) or the 75% coverage threshold. Treated as corroborating NL2, not an independent replication.
 >
 > **Code1 (domain contrast, exploratory):** Structural symbols have higher peak context gain (Mann-Whitney p=0.022, exploratory; structural median 2.158 vs lexical 1.692 bits) but the rate of accumulation with log-context is not steeper (β₃=−0.024, p=0.930). This motivates a distinction between the magnitude and trajectory of context gain.
 
