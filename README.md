@@ -135,7 +135,7 @@ than lexical ones.
 |---|---|---|
 | Shakespeare | Natural language | Complete Works (public domain) |
 | Pride and Prejudice | Natural language | Project Gutenberg #1342 |
-| Python 3.12 stdlib | Source code | CPython local installation (164 files) |
+| Python 3.12 stdlib | Source code | CPython local installation (163 files) |
 
 ---
 
