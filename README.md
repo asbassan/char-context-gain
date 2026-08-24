@@ -2,8 +2,7 @@
 ### Measuring Character-Specific Context Gain in Natural Language and Source Code
 
 **Author:** Amar Bassan  
-**Preprint:** https://doi.org/10.5281/zenodo.22074823  
-**Companion book:** *Transformers From Scratch* (Leanpub)
+**Preprint:** https://doi.org/10.5281/zenodo.22074823
 
 ---
 
@@ -205,4 +204,3 @@ than lexical ones.
 
 ---
 
-*Part of "Transformers From Scratch: A Complete Manual" — Amar Bassan, 2026*
