@@ -2,7 +2,7 @@
 ### Measuring Character-Specific Context Gain in Natural Language and Source Code
 
 **Author:** Amar Bassan  
-**Preprint:** [Zenodo DOI — to be assigned]  
+**Preprint:** https://doi.org/10.5281/zenodo.22074823  
 **Companion book:** *Transformers From Scratch* (Leanpub)
 
 ---

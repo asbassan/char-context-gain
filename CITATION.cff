@@ -1,4 +1,5 @@
 cff-version: 1.2.0
+message: "If you use this work, please cite it using the metadata below."
 title: "Which Characters Need Context? Measuring Character-Specific Context Gain in Natural Language and Source Code"
 authors:
   - family-names: Bassan
@@ -6,7 +7,7 @@ authors:
     email: asbassan@gmail.com
 date-released: "2026-08-23"
 doi: 10.5281/zenodo.22074823
-url: "https://github.com/asbassan/char-context-gain"
+url: "https://doi.org/10.5281/zenodo.22074823"
 license: CC-BY-4.0
 repository-code: "https://github.com/asbassan/char-context-gain"
 keywords:
