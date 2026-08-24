@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+title: "Which Characters Need Context? Measuring Character-Specific Context Gain in Natural Language and Source Code"
+authors:
+  - family-names: Bassan
+    given-names: Amarpreet Singh
+    email: asbassan@gmail.com
+date-released: "2026-08-23"
+doi: 10.5281/zenodo.22074823
+url: "https://github.com/asbassan/char-context-gain"
+license: CC-BY-4.0
+repository-code: "https://github.com/asbassan/char-context-gain"
+keywords:
+  - character-level language modelling
+  - context gain
+  - n-gram models
+  - surprisal
+  - panel regression
+  - natural language processing
+  - source code analysis
+  - information theory

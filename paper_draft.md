@@ -6,7 +6,7 @@
 **Date:** 2026-08-21  
 **Version:** Manuscript experiment — per-corpus coverage-probe k_max (k≤7 NL1, k≤8 NL2, k≤10 Code1), Laplace smoothing, cluster-robust SEs  
 **Repository:** github.com/asbassan/char-context-gain  
-**Zenodo DOI:** [to be assigned]
+**Zenodo DOI:** https://doi.org/10.5281/zenodo.22074823
 
 ---
 
