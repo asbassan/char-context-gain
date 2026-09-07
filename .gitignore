@@ -23,9 +23,28 @@ results/
 results_v2/
 pilot_context_curves.png
 
-# Old cache files
-cg_cache.db
-*.log
+# SQLite experiment caches (large, restartable from scratch)
+*.db
+
+# Old results directories (content preserved in results_canonical_snapshot/)
+results_v3/
+
+# TDS article drafts (separate track, not paper reproducibility)
+tds_article/
+tds_article_v2/
+tds_article_v2.zip
+tds_article_draft.md
+
+# LaTeX version (different format, separate archive)
+which-characters-need-context/
+which-characters-need-context*.zip
+
+# TMLR Jekyll infrastructure (auto-generated, not author content)
+tmlr_submission/tmlr_do_not_modify/
+tmlr_submission/merge_only.py
+
+# Internal planning docs
+TMLR_submission_roadmap.md
 
 # Generated PDF (built from paper_draft.md)
 paper_draft.pdf

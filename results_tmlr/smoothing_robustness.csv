@@ -1,0 +1,7 @@
+corpus,smoothing,beta3,se,ci_low,ci_high,p_value,n_obs,n_clusters
+shakespeare,laplace,0.54868,0.25023,0.0472,1.05016,0.03258,272,56
+shakespeare,kt_add_half,0.50961,0.24102,0.02659,0.99262,0.03903,272,56
+pride_prej,laplace,1.13084,0.33685,0.45196,1.80971,0.00163,310,45
+pride_prej,kt_add_half,1.1141,0.33031,0.44841,1.77979,0.00156,310,45
+python_stdlib,laplace,-0.02431,0.2775,-0.577,0.52839,0.93044,456,77
+python_stdlib,kt_add_half,-0.01143,0.28292,-0.5749,0.55205,0.96789,506,77

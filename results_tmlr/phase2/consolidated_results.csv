@@ -1,0 +1,17 @@
+name,label,is_code,beta3,se,ci_low,ci_high,p_value,r2,n_obs,n_clusters,n_structural_clusters
+pride_prej,"Pride & Prejudice
+(Austen, 19c novel)",False,1.1308,0.3368,0.452,1.8097,0.0016,0.7007,310,45,5
+reuters,"Reuters
+(news wire)",False,0.7115,0.3475,0.0183,1.4048,0.0444,0.3456,490,70,8
+bible_kjv,"Bible KJV
+(religious prose)",False,0.6933,0.3908,-0.0874,1.474,0.0808,0.5057,440,65,7
+wikitext_103,"WikiText-103
+(Wikipedia)",False,0.6756,0.4042,-0.1309,1.482,0.0992,0.5566,470,70,10
+shakespeare,"Shakespeare
+(drama)",False,0.5487,0.2502,0.0472,1.0502,0.0326,0.3929,272,56,7
+nodejs_js,"Node.js stdlib
+(JavaScript)",True,-0.3212,0.1918,-0.7027,0.0603,0.0977,0.4606,547,83,23
+commons_lang_java,"Commons Lang
+(Java)",True,0.0752,0.2644,-0.4506,0.601,0.7768,0.2253,556,86,23
+python_stdlib,"Python stdlib
+(canonical strata)",True,-0.0243,0.2775,-0.577,0.5284,0.9304,0.5709,456,77,20
