@@ -47,7 +47,7 @@ toc:
 
 ## Abstract
 
-We introduce a per-character context-gain profiling framework that decomposes context dependence into two distinct estimands: *trajectory*, the rate at which predictive benefit accumulates with additional context, and *magnitude*, the mean benefit accumulated over the reliable context range. These quantities are partially decoupled by construction and can differ in ways that aggregate perplexity obscures. The framework is reusable for any corpus via a standalone profiling tool.
+We introduce a per-character context-gain profiling framework that decomposes context dependence into two distinct estimands: *trajectory*, the rate at which predictive benefit accumulates with additional context, and *magnitude*, the average predictive benefit over the reliable context range. These quantities are partially decoupled by construction and can differ in ways that aggregate perplexity obscures. The framework is reusable for any corpus via a standalone profiling tool.
 
 Applying the framework to natural language and source code, the framework reveals a robust structural-trajectory effect in natural-language prose: in Pride and Prejudice, structural characters have significantly steeper trajectories than lexical characters after controlling for frequency, with a second nominally significant cross-corpus result in Reuters. Shakespeare is directionally consistent but weaker. Code corpora serve as contrast cases with no significant trajectory effect.
 
@@ -75,7 +75,7 @@ Applied to natural-language prose and source code, the framework reveals a corpu
 
 3. A **code contrast case** — in the Python corpus studied, no significant trajectory effect is observed ($$\beta_3=-0.024$$, $$p=0.930$$); structural characters show an exploratory Mean Context Gain advantage. Code corpora serve as a contrast, not a second headline result.
 
-4. A **trajectory/magnitude dissociation** — trajectory (rate of accumulation) and magnitude (mean gain over the reliable range) are partially decoupled by construction and dissociate in the corpora studied. This dissociation is hidden by aggregate perplexity. This is the paper's central conceptual contribution.
+4. A **trajectory/magnitude dissociation** — trajectory (rate of accumulation) and magnitude (mean gain over the reliable range) are partially decoupled by construction and dissociate in the corpora studied. This dissociation is hidden by aggregate perplexity.
 
 5. **Cross-corpus and robustness evidence** — all five NL corpora show positive $$\beta_3$$; the NL/code domain partition achieves the maximum mean $$\beta_3$$ separation across all $$\binom{8}{5}=56$$ assignments (exact permutation $$p=0.018$$). Four robustness checks confirm NL2: LOO regression, KT smoothing, five text splits, lexical definition sensitivity.
 
@@ -122,6 +122,8 @@ For a Laplace-smoothed n-gram trained on $$D_{\text{train}}$$ with vocabulary si
 $$P(x_t | x_{t-k:t-1}) = \frac{\text{count}(x_{t-k:t-1}, x_t) + 1}{\text{count}(x_{t-k:t-1}) + |V|}$$
 
 $$S_x(k; D) = \mathbb{E}[-\log_2 P(x_t | x_{t-k:t-1}) \mid x_t = x]$$
+
+Count-based n-gram models with Laplace smoothing serve as a conservative, interpretable baseline. The context-gain values reported here are model-specific estimates obtained without learned representations or long-range neural capacity, providing a reproducible reference point for future comparisons against neural character-level models.
 
 ### Per-Symbol Analysis
 
@@ -204,7 +206,7 @@ A character can have high Mean Context Gain but flat trajectory ($$\beta_3 \appr
 | NL2 | Pride and Prejudice | Natural language | ~694K chars | 87 |
 | Code1 | Python 3.12 stdlib (163 files) | Source code | ~4.6M chars | 164 |
 
-All splits: 80% train / 10% test on raw characters; the remaining 10% is held out as a validation partition and is not used in any reported computation. Phase 2 replication corpora are described in Section [Replication Across Corpora].
+All splits: 80% train / 10% test on raw characters; the remaining 10% is held out as a validation partition and is not used in any reported computation. Phase 2 replication adds three natural-language corpora and two source-code corpora beyond the three canonical corpora; all eight are described in Section [Replication Across Corpora].
 
 ---
 
@@ -334,15 +336,7 @@ An exact permutation test over all $$\binom{8}{5}=56$$ assignments of the eight 
 
 ### Main Finding
 
-The NL2 structural-trajectory result is robust across coverage thresholds, functional forms, five text splits, and lexical-definition variants; Reuters is confirmed positive under leave-one-character-out analysis. The defensible claims, with cluster-robust inferential statistics, are:
-
-> **NL2 (primary):** Structural symbols have a robustly steeper trajectory than lexical symbols after controlling for character frequency ($$\beta_3=+1.131$$, cluster-robust $$p=0.002$$, permutation $$p=0.001$$). Mean Context Gain nominally significant ($$p=0.040$$).
->
-> **NL3 Reuters (second replication):** $$\beta_3=+0.712$$, $$p=0.044$$. Mean Context Gain nominally significant ($$p=0.015$$).
->
-> **NL1 (directional):** $$\beta_3=+0.549$$, $$p=0.033$$; does not survive the character-label permutation test ($$p=0.093$$). Corroborating, not independent.
->
-> **Code1 (contrast case):** No significant trajectory effect ($$\beta_3=-0.024$$, $$p=0.930$$). Code corpora serve as domain contrast cases, not a second headline result.
+The NL2 structural-trajectory result is robust across coverage thresholds, functional forms, five text splits, and lexical-definition variants; Reuters is confirmed positive under leave-one-character-out analysis. In Pride and Prejudice, structural symbols have a robustly steeper trajectory than lexical symbols after controlling for character frequency ($$\beta_3=+1.131$$, cluster-robust $$p=0.002$$, permutation $$p=0.001$$), with Mean Context Gain nominally significant ($$p=0.040$$). Reuters provides a second nominally significant cross-corpus result ($$\beta_3=+0.712$$, $$p=0.044$$; Mean Context Gain $$p=0.015$$). Shakespeare is directionally consistent ($$\beta_3=+0.549$$, $$p=0.033$$) but does not survive the character-label permutation test ($$p=0.093$$); it is purely directional, not independent replication. Python source code serves as a domain contrast case with no significant trajectory effect ($$\beta_3=-0.024$$, $$p=0.930$$).
 
 ### Trajectory and Mean Context Gain as Distinct Estimands
 

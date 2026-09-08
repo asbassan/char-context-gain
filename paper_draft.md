@@ -12,7 +12,7 @@
 
 ## Abstract
 
-We introduce a per-character context-gain profiling framework that decomposes context dependence into two distinct estimands: *trajectory*, the rate at which predictive benefit accumulates with additional context, and *magnitude*, the total benefit accumulated over the reliable context range. These quantities are partially decoupled by construction and can differ in ways that aggregate perplexity obscures. The framework is reusable for any corpus via a standalone profiling tool.
+We introduce a per-character context-gain profiling framework that decomposes context dependence into two distinct estimands: *trajectory*, the rate at which predictive benefit accumulates with additional context, and *magnitude*, the average predictive benefit over the reliable context range. These quantities are partially decoupled by construction and can differ in ways that aggregate perplexity obscures. The framework is reusable for any corpus via a standalone profiling tool.
 
 Applying the framework to natural language and source code, the framework reveals a robust structural-trajectory effect in natural-language prose: in Pride and Prejudice, structural characters have significantly steeper trajectories than lexical characters after controlling for frequency, with a second nominally significant cross-corpus result in Reuters. Shakespeare is directionally consistent but weaker. Code corpora serve as contrast cases with no significant trajectory effect.
 
@@ -40,7 +40,7 @@ Applied to natural-language prose and source code, the framework reveals a corpu
 
 3. A **code contrast case** — in the Python corpus studied, no significant trajectory effect is observed (β₃=−0.024, p=0.930); structural characters show an exploratory Mean Context Gain advantage. Code corpora serve as a contrast, not a second headline result.
 
-4. A **trajectory/magnitude dissociation** — trajectory (rate of accumulation) and magnitude (mean gain over the reliable range) are partially decoupled by construction and dissociate in the corpora studied: in canonical Python, structural characters achieve higher mean CG than lexical characters without doing so through a steeper accumulation rate. This dissociation is hidden by aggregate perplexity. This is the paper's central conceptual contribution.
+4. A **trajectory/magnitude dissociation** — trajectory (rate of accumulation) and magnitude (mean gain over the reliable range) are partially decoupled by construction and dissociate in the corpora studied: in canonical Python, structural characters achieve higher mean CG than lexical characters without doing so through a steeper accumulation rate. This dissociation is hidden by aggregate perplexity.
 
 5. **Cross-corpus and robustness evidence** — all five NL corpora show positive β₃; the NL/code domain partition achieves the maximum mean β₃ separation across all C(8,5)=56 assignments (exact permutation p=0.018). Four robustness checks confirm NL2: LOO regression, KT smoothing, five text splits, lexical definition sensitivity.
 
@@ -48,7 +48,7 @@ Applied to natural-language prose and source code, the framework reveals a corpu
 
 ## 2. Background and Related Work
 
-**Overview.** *Prior work measures context dependence either in aggregate — Shannon entropy over all characters, perplexity over all tokens — or studies punctuation's role inside neural attention weights. Variable-order Markov models (VOM, PPM) select context length conditioned on the observed history; the present work instead conditions on the target character, measuring how much each target benefits from longer context. No prior work combines per-character decomposition, frequency-controlled regression, and corpus comparison across prose and source code. This section situates the paper within that landscape and identifies the specific gap the present study addresses.*
+Prior work measures context dependence either in aggregate — Shannon entropy over all characters, perplexity over all tokens — or studies punctuation's role inside neural attention weights. Variable-order Markov models (VOM, PPM) select context length conditioned on the observed history; the present work instead conditions on the target character, measuring how much each target benefits from longer context. No prior work combines per-character decomposition, frequency-controlled regression, and corpus comparison across prose and source code.
 
 **Character-level entropy.** Shannon (1951) measured H(k) for English prose as a whole. Brown et al. (1992) estimated entropy decay with context. Scheibner et al. (2025) showed character-level conditional entropy continues declining with very long context in large LLMs. These works primarily characterize aggregate entropy or surprisal rather than context-gain trajectories for individual target characters.
 
@@ -65,8 +65,6 @@ Applied to natural-language prose and source code, the framework reveals a corpu
 ---
 
 ## 3. Methodology
-
-**Overview.** *This section defines the measurement framework precisely. For each character in a corpus we estimate how surprising it is at each context length k using a count-based n-gram model, then compute Context Gain as the reduction in surprisal relative to a one-character baseline. A per-symbol coverage diagnostic identifies when n-gram estimates become unreliable at high k, gating which observations enter the regression. The regression itself tests whether structural characters — punctuation and delimiters — accumulate context gain faster than lexical characters after controlling for frequency. All design choices that affect the reported numbers are stated here explicitly.*
 
 ### 3.1 Notation and terminology
 
@@ -93,9 +91,9 @@ S_x(k; D) = E[-log₂ P(x_t | x_{t-k:t-1}) | x_t = x]
            = mean over test positions where x_t = x
 ```
 
-### 3.3 Per-symbol analysis: individual characters, then classification
+Count-based n-gram models with Laplace smoothing serve as a conservative, interpretable baseline. The context-gain values reported here are model-specific estimates obtained without learned representations or long-range neural capacity, providing a reproducible reference point for future comparisons against neural character-level models.
 
-**Overview.** *We measure surprisal for every character separately, then assign each a type — structural or lexical — after measurement, not before. This avoids a common aggregation error: comparing a single punctuation character against dozens of letters lumped together would confuse frequency effects with type effects. Measuring first, classifying after, is what makes the regression's frequency control meaningful.*
+### 3.3 Per-symbol analysis: individual characters, then classification
 
 We measure S_x(k; D) and CG_x(k; D) for **every individual character x** in the corpus vocabulary. We then classify characters as structural or lexical *after* measurement. This avoids the apples-to-oranges problem of comparing singleton punctuation characters (`,`, `.`) against broad aggregates (all vowels, all consonants).
 
@@ -113,8 +111,6 @@ This means `?` and `!` in Python are excluded from the structural set entirely �
 
 ### 3.4 Python tokenization
 
-**Overview.** *Python source files contain punctuation in two very different roles: as executable syntax operators (`:` in `if x:`) and as characters inside string literals and comments (`:` in `"hello: world"`). These have different statistical properties and should not be compared as if they were the same. We use Python's built-in tokenizer to assign each character position a stratum so that only genuine syntax-stratum characters enter the structural category in the Code1 analysis.*
-
 We apply Python's `tokenize` module to each `.py` file individually before concatenation, assigning each character position a stratum: `syntax`, `keyword`, `identifier`, `string`, `comment`, `numeric`, `whitespace`, `other`. Only `syntax`-stratum characters are candidates for the structural category in Code1.
 
 Stratum distribution in Code1 test set:
@@ -130,8 +126,6 @@ Stratum distribution in Code1 test set:
 In this corpus, 42% of characters fall inside STRING or COMMENT tokens — a corpus-specific figure that reflects the stdlib's heavy use of docstrings and string constants, not a general property of Python codebases. Strings may contain paths, regex, serialised data, SQL, or program constants — not necessarily natural language. When interpreting punctuation characters specifically as executable syntax operators, tokenizer stratification is required to separate them from identical characters appearing in string literals and comments.
 
 ### 3.5 Coverage diagnostic and reliable k range
-
-**Overview.** *At long context lengths, most test sequences were never seen during training. The n-gram then produces near-uniform smoothed probabilities regardless of the true dependency — an artifact of data sparsity, not a genuine signal. This section defines a per-symbol coverage metric that flags when estimates become unreliable, and uses it to determine the maximum k we trust for each corpus. The reliable range turns out to be corpus-specific and cannot be read off from corpus size alone.*
 
 At high k, most test contexts were never seen in training. Laplace smoothing then produces loss near −log₂(1/|V|) regardless of the true dependency — a measurement artifact, not a signal.
 
@@ -154,16 +148,14 @@ NL2 stays reliable at k=8 despite being the smallest corpus. NL1 breaks at k=8 d
 
 ### 3.6 Confidence intervals
 
-**Overview.** *We report uncertainty on each surprisal estimate using standard intervals. However, peak context gain — the maximum CG across all k values for a character — carries an additional upward bias because we are selecting the largest of several noisy estimates. The more k values a character qualifies for, the more chances it has to record an accidentally high peak. This section explains why peak CG confidence intervals are approximate and why the regression, which avoids peak selection entirely, is the more reliable inferential test.*
-
 For n ≥ 30 test instances: 95% CI on mean surprisal using the CLT (mean ± 1.96 × SE).
 For n < 30: bootstrap 95% CI (1,000 resamples). All symbols with n < 30 are excluded from primary analysis and flagged if reported.
 
-**CG_peak CI.** Since CG_x(k) = S_x(1) − S_x(k), the 95% CI on CG is computed as a conservative bound: CI_lo = S_x(1)_lo − S_x(k_peak)_hi and CI_hi = S_x(1)_hi − S_x(k_peak)_lo. This treats the two surprisal estimates as if they were independent, producing CIs that are wider than necessary. Additionally, CG_peak = max_k CG_x(k) is a selected maximum from noisy estimates, introducing selection optimism: E[max(CG_hat)] > max(E[CG_hat]). Characters with more eligible k values have more chances to record an extreme maximum. These CG_peak CIs should therefore be interpreted as approximate and likely anti-conservative for the peak estimate specifically. The regression analysis (Section 4.1), which uses CG at each k independently rather than the selected peak, is not affected by this selection issue.
+**CG_peak CI.** Since CG_x(k) = S_x(1) − S_x(k), the 95% CI on CG is computed as a conservative bound: CI_lo = S_x(1)_lo − S_x(k_peak)_hi and CI_hi = S_x(1)_hi − S_x(k_peak)_lo. This treats the two surprisal estimates as if they were independent, producing CIs that are wider than necessary. Additionally, CG_peak = max_k CG_x(k) is a selected maximum from noisy estimates, introducing selection optimism: E[max(CG_hat)] > max(E[CG_hat]). Characters with more eligible k values have more chances to record an extreme maximum. These CG_peak CIs should therefore be interpreted as approximate and likely anti-conservative for the peak estimate specifically. The regression analysis (Section 4.1), which uses each k-specific CG observation rather than a selected maximum, is not affected by this selection issue.
 
 ### 3.7 Statistical tests
 
-**Overview.** *Two tests answer two different questions. Mann-Whitney asks whether structural characters reach a higher maximum context gain than lexical characters — a comparison of peaks. The regression asks whether structural characters accumulate context gain faster per unit of additional context — a comparison of slopes. Both are reported throughout the paper; they are not interchangeable and can legitimately give different answers for the same corpus. Understanding this distinction is essential for interpreting the results in Section 4.*
+Two tests answer two different questions. Mann-Whitney asks whether structural characters have higher Mean Context Gain than lexical characters — a comparison of average magnitude over the reliable context range. A separate peak comparison is retained only as an exploratory reference. The regression asks whether structural characters accumulate context gain faster per unit of additional context — a comparison of slopes. Both are reported throughout the paper and are not interchangeable; they can legitimately give different answers for the same corpus.
 
 **Mann-Whitney U**: one-sided test (structural > lexical) on per-symbol Mean Context Gain distributions. Tests whether structural characters have stochastically higher Mean Context Gain than lexical characters. A secondary Mann-Whitney on CG_peak is reported as an exploratory reference; CG_peak results are labelled exploratory throughout.
 
@@ -197,7 +189,7 @@ Context dependence has two distinct components captured by different statistics;
 | NL2 | Pride and Prejudice | Natural language | ~694K chars | 87 |
 | Code1 | Python 3.12 stdlib (163 files) | Source code | ~4.6M chars | 164 |
 
-Phase 2 replication corpora (five additional NL, two additional code) are described in Section 4.7.
+Phase 2 replication adds three natural-language corpora and two source-code corpora beyond the three canonical corpora; all eight are described in Section 4.7.
 
 All splits: 80% train / 10% test on raw characters. (A 10% validation split was created but not used in any reported computation; all surprisal estimates and regression observations are from the held-out test portion only.) Candidate context lengths were evaluated up to the per-corpus k_max determined by the coverage probe (Section 3.5); k=1 serves as the CG baseline; regression observations use k ∈ {2, ..., k_max}. The probe yielded k_max = 7 for NL1, k_max = 8 for NL2, and k_max = 10 for Code1.
 
@@ -205,13 +197,9 @@ All splits: 80% train / 10% test on raw characters. (A 10% validation split was 
 
 ## 4. Results
 
-**Overview.** *The strongest single-corpus result is in Pride and Prejudice (NL2): structural characters have a significantly steeper context-gain trajectory than lexical characters (β₃=+1.131, p=0.002), confirmed by permutation test (p=0.001) and stable across coverage thresholds, functional forms, text splits (all 5 positive, 4/5 p<0.05), and lexical definition (alpha-only: Δβ₃=2.4%). Shakespeare (NL1) shows the same direction but does not survive the permutation test. Python source code (Code1) shows a null trajectory effect but an exploratory peak-gain difference. An exact permutation over all C(8,5)=56 domain assignments of the eight Phase 2 corpora confirms that the observed NL/code partition achieves the maximum possible mean-difference (p=1/56=0.018). The section reports evidence in order: main regression (Section 4.1), peak comparison (4.2), per-symbol profiles (4.3–4.5), robustness suite (4.6), replication across eight corpora (4.7), and the cross-domain permutation test (4.8).*
+The strongest single-corpus result is in Pride and Prejudice (NL2): structural characters have a significantly steeper context-gain trajectory than lexical characters (β₃=+1.131, p=0.002), confirmed by permutation test (p=0.001) and stable across coverage thresholds, functional forms, text splits (all 5 positive, 4/5 p<0.05), and lexical definition (alpha-only: Δβ₃=2.4%). Shakespeare (NL1) shows the same direction but does not survive the permutation test. Python source code (Code1) shows a null trajectory effect but an exploratory Mean Context Gain difference. An exact permutation over all C(8,5)=56 domain assignments of the eight Phase 2 corpora confirms that the observed NL/code partition achieves the maximum possible mean-difference (p=1/56=0.018). Evidence is reported in order: main regression (Section 4.1), magnitude comparison using Mean Context Gain (4.2), per-symbol profiles (4.3–4.5), robustness suite (4.6), replication across eight corpora (4.7), and the cross-domain permutation test (4.8).
 
 ### 4.1 Regression with cluster-robust standard errors
-
-**Overview.** *This is the main inferential section. The main regression result is reported for all three corpora, followed by four robustness checks in sequence: coverage threshold sensitivity (does the result hold if we tighten or loosen the coverage filter?), character-label permutation test (is β₃ an artifact of which characters happen to be labelled structural?), functional form comparison (does the result depend on the log₂(k) parametrisation?), and the multiple-testing hierarchy (which results survive Bonferroni correction?). NL2 survives all four checks; NL1 does not; Code1 is null throughout.*
-
-This section reports: (a) the main regression results, (b) coverage threshold sensitivity, (c) character-label permutation test, (d) functional form robustness, and (e) the multiple-testing hierarchy.
 
 OLS with standard errors clustered by character (G = number of unique characters), enforcing per-symbol coverage ≥ 50% for each (character, k) observation included.
 
@@ -318,7 +306,7 @@ Key structural characters with n ≥ 30 in syntax stratum:
 
 ### 4.5 The colon cross-corpus comparison
 
-**Overview.** *The colon `:` appears in both Shakespeare (following speaker names, e.g. `HAMLET:`) and Python (following keywords, e.g. `if x:`). Comparing its context-gain profile across corpora illustrates how the same character can have very different context dependency depending on the surrounding grammar. The result is counterintuitive: the Python colon — despite being grammar-enforced — has slightly lower context gain than the Shakespeare colon, consistent with short repeated keyword patterns making it locally predictable without requiring long-range context.*
+The colon `:` appears in both Shakespeare (following speaker names, e.g. `HAMLET:`) and Python (following keywords, e.g. `if x:`). The Python colon — despite being grammar-enforced — has slightly lower context gain than the Shakespeare colon, consistent with short repeated keyword patterns making it locally predictable without requiring long-range context.
 
 | Corpus | S_x(1) | CG_peak | k_peak | n_test |
 |--------|--------|---------|--------|--------|
@@ -383,15 +371,7 @@ An exact permutation test over all C(8,5)=56 assignments of the eight Phase 2 co
 
 ### 5.1 Main finding
 
-The NL2 structural-trajectory result is robust across coverage thresholds, functional forms, five text splits, and lexical-definition variants; Reuters is confirmed positive under leave-one-character-out analysis. The defensible claims, with cluster-robust inferential statistics, are:
-
-> **NL2 (primary):** Structural symbols have a robustly steeper trajectory than lexical symbols after controlling for character frequency (β₃=+1.131, cluster-robust p=0.002, permutation p=0.001). Mean Context Gain nominally significant (p=0.040).
->
-> **NL3 Reuters (second replication):** β₃=+0.712, p=0.044. Mean Context Gain nominally significant (p=0.015).
->
-> **NL1 (directional):** β₃=+0.549, p=0.033; does not survive the character-label permutation test (p=0.093). Corroborating, not independent.
->
-> **Code1 (contrast case):** No significant trajectory effect (β₃=−0.024, p=0.930). Code corpora serve as domain contrast cases, not a second headline result.
+The NL2 structural-trajectory result is robust across coverage thresholds, functional forms, five text splits, and lexical-definition variants; Reuters is confirmed positive under leave-one-character-out analysis. In Pride and Prejudice, structural symbols have a robustly steeper trajectory than lexical symbols after controlling for character frequency (β₃=+1.131, cluster-robust p=0.002, permutation p=0.001), with Mean Context Gain nominally significant (p=0.040). Reuters provides a second nominally significant cross-corpus result (β₃=+0.712, p=0.044; Mean Context Gain p=0.015). Shakespeare is directionally consistent (β₃=+0.549, p=0.033) but does not survive the character-label permutation test (p=0.093); it is purely directional, not independent replication. Python source code serves as a domain contrast case with no significant trajectory effect (β₃=−0.024, p=0.930).
 
 ### 5.2 Trajectory and Mean Context Gain as distinct estimands
 
@@ -406,8 +386,6 @@ The trajectory/magnitude framework has a direct practical analogue: different pr
 The per-character Mean Context Gain profiles illustrate this concretely in Pride and Prejudice: `!` achieves mean CG=2.97 bits over k=2..8, accumulating benefit through k=6; `,` achieves 0.65 bits and saturates earlier; `e`, `h`, `a` show near-zero or slightly negative mean CG. A context-budget system could preferentially extend context for `!`-type positions while truncating earlier at `e`-type positions, where additional context provides no measured benefit. We make no claim that n-gram saturation orderings transfer directly to neural models; this is a reproducible baseline that can be compared against neural measurements at the same character level. A natural follow-on question is whether these context-dependency differences are preserved or altered when characters are absorbed into subword tokens by BPE merging — testable using S_x(k; D) as a character-level baseline.
 
 ### 5.4 Limitations
-
-Seven limitations are disclosed explicitly, each assessed for its impact on the reported findings.
 
 1. **Alternative smoothing**: Laplace smoothing is suboptimal at high k. Per-symbol coverage filtering (≥50%) and frequency control (β₄) address the primary Laplace bias mechanisms, and the coverage sensitivity analysis (Section 4.1) shows the NL2 finding is robust across all three thresholds. A true interpolated Kneser-Ney test would require recursive backoff (k → k-1 → ... → unigram), which is beyond the scope of this study.
 
