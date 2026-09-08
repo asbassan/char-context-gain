@@ -1,12 +1,12 @@
 # Which Characters Need Context?
 ## Decomposing Context Dependence into Trajectory and Magnitude via Per-Character Profiling
 
-**Author:** Amar Bassan  
-**Affiliation:** Independent Researcher  
+**Author:** [Anonymous]  
+**Affiliation:** [Anonymous]  
 **Date:** 2026-08-21  
 **Version:** Manuscript experiment — per-corpus coverage-probe k_max (k≤7 NL1, k≤8 NL2, k≤10 Code1), Laplace smoothing, cluster-robust SEs  
-**Repository:** github.com/asbassan/char-context-gain  
-**Zenodo DOI:** https://doi.org/10.5281/zenodo.22074823
+**Repository:** [Anonymous]  
+**Zenodo DOI:** [Anonymous]
 
 ---
 
@@ -450,7 +450,7 @@ We introduced a per-character framework that decomposes context dependence into 
 
 ## Appendix — Reproducibility
 
-**Code:** github.com/asbassan/char-context-gain
+**Code:** [Anonymous]
 
 **Node.js approximate stratification (robustness check for Section 4.7).** Phase 2 code corpora use character-identity classification without per-language tokenizer strata. For Node.js, we applied an approximate regex-based stratification to partially address this asymmetry: each corpus character is labelled code (45.9%), string literal (40.0%), or comment (14.1%). Characters with <50% code-stratum purity are excluded from the structural set (`*`, `/`, `-`, `@`, `^`, `~`, `\`). Re-running OLS on the stratified panel yields β₃=+0.088 (SE=0.175, 95% CI=[−0.256, +0.431], p=0.618, n=537, G=79), vs. unstratified β₃=−0.321 (p=0.098). Both are null. The stratified estimate is closer to zero, consistent with the weakly-negative unstratified result being partly attributable to contaminated characters (e.g., `-` as prose hyphen in string literals). Script: `tmlr_experiments/run_js_stratified.py`; output: `results_tmlr/nodejs_stratified_result.csv`.
 
