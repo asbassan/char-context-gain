@@ -1,0 +1,2 @@
+corpus,b3,se,ci_lo,ci_hi,p,n,G,r2,note
+nodejs_stratified,0.0877,0.1752,-0.2557,0.4310,0.618143,537,79,0.531,regex-based string/comment stratification

@@ -1,0 +1,5 @@
+corpus,n_struct,n_lex,median_struct_auc,median_lex_auc,mw_p
+NL1_shakespeare,7,49,1.5634,0.0496,0.006393
+NL2_pride_prej,5,40,1.7026,0.6967,0.039825
+Code1_python,20,57,1.7403,1.1054,0.018524
+NL3_reuters,8,62,2.7020,1.1433,0.014795

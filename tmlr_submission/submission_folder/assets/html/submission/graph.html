@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Graph</title>
+    <style>
+        /* 1. Reset everything to fill the screen with no scrollbars */
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* CRITICAL: Prevents scrollbars */
+            background-color: #f0f2f5; 
+            font-family: sans-serif;
+        }
+
+        /* 2. Make the SVG fill whatever container it is in */
+        svg {
+            display: block; /* Removes tiny scrollbar gaps */
+            width: 100%;
+            height: 100%;
+        }
+
+        .link {
+            stroke: #555;
+            stroke-width: 4px;
+            stroke-opacity: 0.6; 
+        }
+
+        .node-circle {
+            stroke: #333;
+            stroke-width: 3px;
+            cursor: grab;
+            transition: stroke-width 0.2s ease;
+        }
+
+        .node-circle:hover { stroke-width: 5px; }
+        .node-circle:active { cursor: grabbing; stroke-width: 6px; }
+
+        .node-text {
+            font-size: 24px;
+            font-weight: 800; 
+            fill: #444;
+            font-family: 'Courier New', Courier, monospace;
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none; 
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+
+<svg id="viz"></svg>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<script>
+    const svg = d3.select("#viz");
+
+    // Initial Dimensions
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+
+    const nodesData = [
+        { id: 1 }, { id: 2 }, { id: 3 }, 
+        { id: 4 }, { id: 5 }, { id: 6 }
+    ];
+
+    const linksData = [
+        { source: 1, target: 2 }, { source: 1, target: 5 },
+        { source: 2, target: 3 }, { source: 2, target: 5 },
+        { source: 3, target: 4 },
+        { source: 4, target: 5 }, { source: 4, target: 6 }
+    ];
+
+    const pastelColors = ["#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF", "#E6B3FF"];
+    const colorScale = d3.scaleOrdinal(pastelColors);
+
+    // Initialize Simulation
+    const simulation = d3.forceSimulation(nodesData)
+        .force("link", d3.forceLink(linksData).id(d => d.id).distance(110).strength(0.4))
+        .force("charge", d3.forceManyBody().strength(-900))
+        .force("collide", d3.forceCollide().radius(38))
+        // Center force is critical for responsiveness
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+    const link = svg.append("g")
+        .attr("class", "links")
+        .selectAll("line")
+        .data(linksData)
+        .enter().append("line")
+        .attr("class", "link");
+
+    const nodeGroup = svg.append("g")
+        .attr("class", "nodes")
+        .selectAll("g")
+        .data(nodesData)
+        .enter().append("g")
+        .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended));
+
+    nodeGroup.append("circle")
+        .attr("r", 32)
+        .attr("class", "node-circle")
+        .attr("fill", d => colorScale(d.id)); 
+
+    nodeGroup.append("text")
+        .text(d => d.id)
+        .attr("class", "node-text");
+
+    simulation.on("tick", () => {
+        link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+
+        nodeGroup.attr("transform", d => `translate(${d.x},${d.y})`);
+    });
+
+    // --- RESPONSIVE LOGIC ---
+    // Listen for window resize events
+    window.addEventListener("resize", () => {
+        width = window.innerWidth;
+        height = window.innerHeight;
+
+        // 1. Update the center force location
+        simulation.force("center", d3.forceCenter(width / 2, height / 2));
+
+        // 2. Re-heat the simulation (alpha = 0.3) so nodes move to the new center
+        simulation.alpha(0.3).restart();
+    });
+
+    function dragstarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+    }
+
+    function dragended(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+stat,value
+n_corpora,8
+n_nl,5
+n_code,3
+n_permutations,56
+mean_nl_beta3,0.751980
+mean_code_beta3,-0.090100
+observed_stat,0.842080
+rank,1
+p_one_sided,0.017857
+n_ge_observed,1
+p_interpretation,"Observed NL/code partition has the 1-largest mean-difference among all 56 C(8,5) assignments. One-sided exact p = 1/56 = 0.0179."
