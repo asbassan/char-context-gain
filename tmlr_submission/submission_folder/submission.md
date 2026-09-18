@@ -117,11 +117,11 @@ Applied to natural-language prose and source code, the framework reveals a corpu
 
 ### Target-Character Mean Surprisal
 
-For a Laplace-smoothed n-gram trained on $$D_{\text{train}}$$ with vocabulary size $$|V|$$:
+For a Laplace-smoothed n-gram trained on $$D_{\text{train}}$$ with vocabulary size $$\lvert V \rvert$$:
 
-$$P(x_t | x_{t-k:t-1}) = \frac{\text{count}(x_{t-k:t-1}, x_t) + 1}{\text{count}(x_{t-k:t-1}) + |V|}$$
+$$P(x_t \mid x_{t-k:t-1}) = \frac{\text{count}(x_{t-k:t-1}, x_t) + 1}{\text{count}(x_{t-k:t-1}) + \lvert V \rvert}$$
 
-$$S_x(k; D) = \mathbb{E}[-\log_2 P(x_t | x_{t-k:t-1}) \mid x_t = x]$$
+$$S_x(k; D) = \mathbb{E}[-\log_2 P(x_t \mid x_{t-k:t-1}) \mid x_t = x]$$
 
 Count-based n-gram models with Laplace smoothing serve as a conservative, interpretable baseline. The context-gain values reported here are model-specific estimates obtained without learned representations or long-range neural capacity, providing a reproducible reference point for future comparisons against neural character-level models.
 
@@ -160,7 +160,7 @@ In this corpus, 42% of characters fall inside STRING or COMMENT tokens. Strings 
 
 ### Coverage Diagnostic and Reliable k Range
 
-At high $$k$$, most test contexts were never seen in training. Laplace smoothing then produces loss near $$-\log_2(1/|V|)$$ regardless of the true dependency — a measurement artifact, not a signal.
+At high $$k$$, most test contexts were never seen in training. Laplace smoothing then produces loss near $$-\log_2(1/\lvert V \rvert)$$ regardless of the true dependency — a measurement artifact, not a signal.
 
 $$\text{Coverage}_x(k; D) = \frac{\text{test positions for } x \text{ where } k\text{-char context was in } D_{\text{train}}}{\text{total test positions for } x}$$
 
